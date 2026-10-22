@@ -164,6 +164,7 @@ class ArchiveTests(unittest.TestCase):
         with tarfile.open(path, "w:gz") as tar:
             root = tarfile.TarInfo("source")
             root.type = tarfile.DIRTYPE
+            root.mode = 0o755
             tar.addfile(root)
             for name, kind, content in entries:
                 info = tarfile.TarInfo(name)
