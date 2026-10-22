@@ -8,6 +8,7 @@ import os
 from pathlib import Path, PurePosixPath, PureWindowsPath
 import re
 import shutil
+import stat
 import struct
 import tarfile
 import tempfile
@@ -372,9 +373,16 @@ def untar_archive(tar_path, extract_dir, progress_cb=None):
         final = destination / root
         final.mkdir()
         try:
-            for child in (stage / root).iterdir():
+            staged_root = stage / root
+            root_stat = staged_root.stat()
+            # Publication needs write access to the staged parent, even when the
+            # archived directory was read-only. Restore its saved mode last.
+            staged_root.chmod(root_stat.st_mode | stat.S_IRWXU)
+            for child in staged_root.iterdir():
                 child.rename(final / child.name)
-            shutil.copystat(stage / root, final)
+            shutil.copystat(staged_root, final)
+            os.utime(final, ns=(root_stat.st_atime_ns, root_stat.st_mtime_ns))
+            final.chmod(stat.S_IMODE(root_stat.st_mode))
         except BaseException:
             shutil.rmtree(final)
             raise
