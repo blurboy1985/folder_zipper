@@ -69,7 +69,8 @@ supported Python version, with additional root and link validation.
 Windows symlink creation depends on account privileges and system policy. No
 administrator rights are assumed. A system unable to recreate a link may fail
 restoration; successful symlink creation is tested where the account allows it.
-Directory permissions are restored after children are extracted. Platform
+Directory permissions are restored after children are extracted, with special
+and group/other-write bits removed. Platform
 metadata such as ACLs, alternate data streams and Windows junction semantics
 is not guaranteed to round-trip.
 

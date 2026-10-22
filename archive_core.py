@@ -354,6 +354,11 @@ def untar_archive(tar_path, extract_dir, progress_cb=None):
                 raise FileExistsError("Restored folder already exists. Choose another output folder.")
             def safe_filter(member, path):
                 filtered = tarfile.data_filter(member, path)
+                if member.isdir():
+                    # data_filter intentionally drops directory modes. Restore
+                    # ordinary permissions, excluding special/group-write bits;
+                    # extractall applies them after creating all descendants.
+                    filtered = filtered.replace(mode=member.mode & 0o755)
                 # Resolve symlink chains, not just lexical .. segments.
                 actual = (Path(path) / member.name).resolve()
                 boundary = stage / root
